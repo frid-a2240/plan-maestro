@@ -1,0 +1,113 @@
+.hp-page { max-width: 1200px; margin: 0 auto; padding: 2rem 1.25rem 5rem; display: flex; flex-direction: column; gap: 1.25rem; }
+
+/* ── TOP BAR ── */
+.hp-topbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; background: #fff; border: 1px solid rgba(26,58,92,0.16); border-radius: 16px; padding: 1.25rem 1.5rem; }
+.hp-brand { display: flex; align-items: center; gap: 12px; }
+.hp-titles { display: flex; flex-direction: column; }
+.hp-title { font-size: 18px; font-weight: 700; color: #1A3A5C; letter-spacing: -0.4px; }
+.hp-sub { font-size: 11px; color: #7A95AE; margin-top: 2px; }
+.hp-nav { display: flex; gap: 8px; align-items: center; }
+.hp-nav-btn { padding: 7px 16px; border-radius: 10px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1.5px solid rgba(26,58,92,0.16); background: transparent; color: #3D5A75; transition: all 0.15s; }
+.hp-nav-btn:hover { background: #EEF2F7; }
+.hp-nav-btn--active { background: #1BA8A0; color: #fff; border-color: #1BA8A0; }
+.hp-month-nav { display: flex; gap: 6px; align-items: center; }
+.hp-month-btn { width: 30px; height: 30px; border-radius: 8px; border: 1px solid rgba(26,58,92,0.16); background: #fff; color: #1A3A5C; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.hp-month-btn:hover { background: #EEF2F7; }
+.hp-month-label { font-size: 14px; font-weight: 700; color: #1A3A5C; min-width: 140px; text-align: center; }
+
+/* ── KPI ROW ── */
+.hp-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.hp-kpi { background: #fff; border: 1px solid rgba(26,58,92,0.16); border-radius: 12px; padding: 16px 18px; }
+.hp-kpi__val { font-size: 28px; font-weight: 800; line-height: 1; color: #1A3A5C; }
+.hp-kpi__lbl { font-size: 11px; color: #7A95AE; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; margin-top: 4px; }
+.hp-kpi__sub { font-size: 11px; color: #7A95AE; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(26,58,92,0.09); }
+.hp-kpi--teal .hp-kpi__val { color: #0D6E6A; }
+.hp-kpi--navy .hp-kpi__val { color: #1E5C8A; }
+
+/* ── MAIN GRID ── */
+.hp-main { display: grid; grid-template-columns: 1fr 270px; gap: 1rem; }
+
+/* ── CARD ── */
+.hp-card { background: #fff; border: 1px solid rgba(26,58,92,0.16); border-radius: 12px; overflow: hidden; }
+.hp-card__head { padding: 12px 16px; border-bottom: 1px solid rgba(26,58,92,0.09); display: flex; align-items: center; justify-content: space-between; }
+.hp-card__title { font-size: 13px; font-weight: 700; color: #1A3A5C; }
+.hp-card__hint { font-size: 11px; color: #7A95AE; }
+.hp-card__body { padding: 14px 16px; }
+
+/* ── CALENDAR ── */
+.hp-day-names { display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; margin-bottom: 5px; }
+.hp-dn { font-size: 11px; color: #7A95AE; text-align: center; padding: 3px 0; font-weight: 600; }
+.hp-cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; }
+.hp-day { border-radius: 6px; min-height: 60px; padding: 5px 6px; border: 1px solid rgba(26,58,92,0.09); background: #F5F8FB; cursor: pointer; display: flex; flex-direction: column; gap: 2px; transition: border-color 0.12s; }
+.hp-day:hover { border-color: rgba(26,58,92,0.28); }
+.hp-day--empty { background: transparent; border-color: transparent; cursor: default; pointer-events: none; }
+.hp-day--today { border-color: #1BA8A0 !important; border-width: 1.5px; }
+.hp-day--has { background: #fff; }
+.hp-day--selected { border-color: #1BA8A0 !important; border-width: 2px; background: #E0F5F4; }
+.hp-day__num { font-size: 11px; font-weight: 600; color: #7A95AE; line-height: 1; }
+.hp-day--today .hp-day__num { color: #0D6E6A; }
+.hp-day__total { font-size: 14px; font-weight: 800; color: #0F2236; line-height: 1; }
+.hp-day__dots { display: flex; flex-wrap: wrap; gap: 2px; margin-top: 2px; }
+.hp-dot { width: 6px; height: 6px; border-radius: 2px; }
+
+/* ── WEEK BARS ── */
+.hp-week-section { margin-top: 1rem; }
+.hp-week-lbl { font-size: 11px; font-weight: 700; color: #7A95AE; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 8px; }
+.hp-week-row { display: grid; grid-template-columns: 56px 1fr 36px; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px solid rgba(26,58,92,0.07); }
+.hp-week-row:last-child { border-bottom: none; }
+.hp-week-tag { font-size: 11px; color: #7A95AE; font-weight: 600; }
+.hp-week-track { height: 8px; background: #EBF0F5; border-radius: 99px; overflow: hidden; }
+.hp-week-fill { height: 100%; background: #1BA8A0; border-radius: 99px; transition: width 0.3s; }
+.hp-week-val { font-size: 11px; font-weight: 700; color: #1A3A5C; text-align: right; }
+
+/* ── PROJECT & PHASE BARS ── */
+.hp-bar-list { display: flex; flex-direction: column; gap: 10px; }
+.hp-bar-item { display: flex; flex-direction: column; gap: 4px; }
+.hp-bar-top { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+.hp-bar-name { font-size: 12px; font-weight: 600; color: #0F2236; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 170px; }
+.hp-bar-hrs { font-size: 12px; color: #7A95AE; flex-shrink: 0; }
+.hp-bar-track { height: 6px; background: #EBF0F5; border-radius: 99px; overflow: hidden; }
+.hp-bar-fill { height: 100%; border-radius: 99px; transition: width 0.3s; }
+.hp-empty { font-size: 12px; color: #7A95AE; padding: 8px 0; }
+
+/* ── ADD FORM ── */
+.hp-add { background: #fff; border: 1px solid rgba(26,58,92,0.16); border-radius: 12px; padding: 1.25rem 1.5rem; }
+.hp-add__title { font-size: 13px; font-weight: 700; color: #1A3A5C; margin-bottom: 12px; }
+.hp-add__form { display: grid; grid-template-columns: 150px 90px 1fr 160px 80px auto; gap: 10px; align-items: end; }
+.hp-field { display: flex; flex-direction: column; gap: 4px; }
+.hp-field label { font-size: 11px; font-weight: 600; color: #7A95AE; text-transform: uppercase; letter-spacing: 0.4px; }
+.hp-field input, .hp-field select { border: 1.5px solid rgba(26,58,92,0.16); border-radius: 8px; padding: 8px 10px; font-size: 13px; color: #0F2236; background: #F5F8FB; outline: none; width: 100%; font-family: inherit; }
+.hp-field input:focus, .hp-field select:focus { border-color: #1BA8A0; box-shadow: 0 0 0 3px rgba(27,168,160,0.12); background: #fff; }
+.hp-add-btn { padding: 9px 20px; border-radius: 8px; background: #1BA8A0; color: #fff; border: none; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.hp-add-btn:hover { background: #0D6E6A; }
+
+/* ── LOG TABLE ── */
+.hp-log { background: #fff; border: 1px solid rgba(26,58,92,0.16); border-radius: 12px; overflow: hidden; }
+.hp-log__head { padding: 12px 16px; border-bottom: 1px solid rgba(26,58,92,0.09); display: flex; align-items: center; justify-content: space-between; }
+.hp-log__cols { display: grid; grid-template-columns: 100px 160px 1fr 60px 60px 28px; gap: 8px; padding: 8px 16px; background: #F5F8FB; border-bottom: 1px solid rgba(26,58,92,0.09); font-size: 11px; font-weight: 700; color: #7A95AE; text-transform: uppercase; letter-spacing: 0.4px; }
+.hp-log__row { display: grid; grid-template-columns: 100px 160px 1fr 60px 60px 28px; gap: 8px; padding: 10px 16px; border-bottom: 1px solid rgba(26,58,92,0.07); font-size: 12px; align-items: center; transition: background 0.1s; }
+.hp-log__row:last-child { border-bottom: none; }
+.hp-log__row:hover { background: #F5F8FB; }
+.hp-log__empty { padding: 2rem; text-align: center; color: #7A95AE; font-size: 13px; }
+.hp-ph-pill { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+.hp-del { background: none; border: none; color: #7A95AE; cursor: pointer; font-size: 16px; line-height: 1; padding: 0; }
+.hp-del:hover { color: #C0392B; }
+.hp-hrs-val { font-weight: 700; color: #0D6E6A; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  .hp-main { grid-template-columns: 1fr; }
+  .hp-kpis { grid-template-columns: repeat(2,1fr); }
+  .hp-add__form { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 600px) {
+  .hp-kpis { grid-template-columns: 1fr 1fr; }
+  .hp-add__form { grid-template-columns: 1fr; }
+  .hp-log__cols, .hp-log__row { grid-template-columns: 80px 1fr 50px 24px; }
+  .hp-log__cols > :nth-child(2), .hp-log__row > :nth-child(2),
+  .hp-log__cols > :nth-child(3), .hp-log__row > :nth-child(3) { display: none; }
+}
+
+/* Botón en App.jsx para navegar a horas */
+.btn-horas { padding: 7px 16px; border-radius: 10px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1.5px solid #5B3FA8; background: #EAE5F8; color: #3C3489; transition: all 0.15s; }
+.btn-horas:hover { background: #5B3FA8; color: #fff; }
