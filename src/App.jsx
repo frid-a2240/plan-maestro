@@ -1,29 +1,102 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import "./App.css";
 import HorasPage from "./HorasPage";
+import { supabase } from "./supabaseClient";
 
-const STORAGE_KEY = "isp_plan_maestro_v1";
-
-function loadData() {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) return JSON.parse(saved);
-  } catch {}
-  return null;
-}
-
-function saveData(activities) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(activities));
-  } catch {}
-}
+/* ─── NEW PHASE STRUCTURE ─── */
 
 const PHASE_META = [
-  { key: "f1", label: "F1", name: "Diagnóstico",    color: "#1BA8A0", light: "#E0F5F4" },
-  { key: "f2", label: "F2", name: "Planificación",  color: "#1E5C8A", light: "#D6E8F5" },
-  { key: "f3", label: "F3", name: "Implementación", color: "#5B3FA8", light: "#EAE5F8" },
-  { key: "f4", label: "F4", name: "Entrega",        color: "#1A3A5C", light: "#D4E0EC" },
+  { key: "f1", label: "F1", name: "Análisis y Planificación",               color: "#1BA8A0", light: "#E0F5F4" },
+  { key: "f2", label: "F2", name: "Diseño, Desarrollo y Pruebas Técnicas",  color: "#1E5C8A", light: "#D6E8F5" },
+  { key: "f3", label: "F3", name: "Validación del Negocio y Calidad",       color: "#5B3FA8", light: "#EAE5F8" },
+  { key: "f4", label: "F4", name: "Cierre, Operación y Mejora Continua",    color: "#1A3A5C", light: "#D4E0EC" },
 ];
+
+/* Subfases template — used for new activities and defaults */
+const SUBFASES_TEMPLATE = [
+  // F1 — Análisis y Planificación
+  {
+    phase: "F1",
+    title: "Levantamiento y Análisis de Requerimientos",
+    desc: "Identificación de necesidades del negocio, stakeholders y alcance.",
+    status: "pending",
+  },
+  {
+    phase: "F1",
+    title: "Planificación del Proyecto",
+    desc: "Definición de cronograma, recursos, riesgos y roadmap.",
+    status: "pending",
+  },
+  // F2 — Diseño, Desarrollo y Pruebas Técnicas
+  {
+    phase: "F2",
+    title: "Diseño de Arquitectura y Especificación Técnica",
+    desc: "Definición de arquitectura, base de datos, APIs e infraestructura.",
+    status: "pending",
+  },
+  {
+    phase: "F2",
+    title: "Desarrollo / Implementación (Coding)",
+    desc: "Construcción del sistema conforme a estándares.",
+    status: "pending",
+  },
+  {
+    phase: "F2",
+    title: "Pruebas Unitarias (White-Box Testing)",
+    desc: "Validación interna del código por módulos.",
+    status: "pending",
+  },
+  {
+    phase: "F2",
+    title: "Pruebas de Integración",
+    desc: "Validación de interacción entre componentes del sistema.",
+    status: "pending",
+  },
+  {
+    phase: "F2",
+    title: "Despliegue a Producción (Go-Live / Release)",
+    desc: "Liberación inicial del sistema en entorno productivo.",
+    status: "pending",
+  },
+  // F3 — Validación del Negocio y Calidad
+  {
+    phase: "F3",
+    title: "Pruebas del Sistema (System Testing)",
+    desc: "Evaluación completa del sistema en ambiente controlado.",
+    status: "pending",
+  },
+  {
+    phase: "F3",
+    title: "Pruebas de Aceptación del Usuario (UAT)",
+    desc: "Validación funcional por parte del usuario o responsable del proceso (Process Owner).",
+    status: "pending",
+  },
+  // F4 — Cierre, Operación y Mejora Continua
+  {
+    phase: "F4",
+    title: "Validación Post-Implementación",
+    desc: "Verificación del correcto funcionamiento en producción.",
+    status: "pending",
+  },
+  {
+    phase: "F4",
+    title: "Mantenimiento, Ajustes y Mejora Continua",
+    desc: "Corrección de errores, optimización y evolución del sistema.",
+    status: "pending",
+  },
+  {
+    phase: "F4",
+    title: "Lecciones Aprendidas",
+    desc: "Documentación de hallazgos, buenas prácticas y áreas de mejora identificadas durante el proyecto, con el objetivo de optimizar futuros desarrollos.",
+    status: "pending",
+  },
+];
+
+const TOTAL_SUBFASES = SUBFASES_TEMPLATE.length; // 12
+
+function makeDefaultSubfases() {
+  return SUBFASES_TEMPLATE.map(s => ({ ...s }));
+}
 
 const STATUS_OPTIONS = ["pending", "active", "done"];
 const STATUS_LABEL   = { pending: "Pendiente", active: "En curso", done: "Completado" };
@@ -37,86 +110,128 @@ const DEFAULT_ACTIVITIES = [
     inicio: "08/04", fin: "09/05", dias: 31,
     owner: "RH", ownerKey: "rh", status: "active", progress: 60,
     ganttStart: 0, ganttEnd: 31,
-    phases: [
-      { label: "F1", title: "Diagnóstico y requisitos", desc: "Identificación de necesidades de capacitación, perfiles de usuario y brechas de habilidades.", date: "08–14 Abr", status: "done" },
-      { label: "F2", title: "Planificación", desc: "Diseño del programa de adiestramiento, materiales y cronograma de sesiones.", date: "15–21 Abr", status: "done" },
-      { label: "F3", title: "Programación", desc: "Ejecución de talleres, sesiones prácticas y evaluaciones parciales.", date: "22–28 Abr", status: "active" },
-      { label: "F4", title: "Validación y entrega", desc: "Evaluación final, certificados y lecciones aprendidas.", date: "29 Abr – 09 May", status: "pending" },
-    ],
+    phases: makeDefaultSubfases(),
   },
   {
     id: 2, name: "Calibración",
     inicio: "01/05", fin: "15/05", dias: 14,
     owner: "Jesús", ownerKey: "jesus", status: "active", progress: 40,
     ganttStart: 30, ganttEnd: 58,
-    phases: [
-      { label: "F1", title: "Diagnóstico y requisitos", desc: "Inventario de equipos, parámetros de calibración y estándares aplicables.", date: "01–03 May", status: "done" },
-      { label: "F2", title: "Planificación", desc: "Programación de calibraciones, asignación de técnicos y recursos.", date: "04–07 May", status: "active" },
-      { label: "F3", title: "Ejecución", desc: "Calibración en campo, registro de mediciones y ajustes.", date: "08–12 May", status: "pending" },
-      { label: "F4", title: "Validación y entrega", desc: "Certificados de calibración, informe final y cierre.", date: "13–15 May", status: "pending" },
-    ],
+    phases: makeDefaultSubfases(),
   },
   {
     id: 3, name: "KPI's",
     inicio: "08/05", fin: "08/06", dias: 31,
     owner: "Jesús", ownerKey: "jesus", status: "pending", progress: 10,
     ganttStart: 37, ganttEnd: 93,
-    phases: [
-      { label: "F1", title: "Diagnóstico y requisitos", desc: "Definición de indicadores clave, fuentes de datos y responsables de medición.", date: "08–15 May", status: "pending" },
-      { label: "F2", title: "Planificación", desc: "Diseño del tablero, metas y semáforos de desempeño.", date: "16–22 May", status: "pending" },
-      { label: "F3", title: "Implementación", desc: "Conexión con fuentes de datos, automatización de reportes.", date: "23–31 May", status: "pending" },
-      { label: "F4", title: "Validación y entrega", desc: "Revisión con process owners, ajustes y publicación oficial.", date: "01–08 Jun", status: "pending" },
-    ],
+    phases: makeDefaultSubfases(),
   },
   {
     id: 4, name: "Inducción",
     inicio: "15/05", fin: "15/06", dias: 31,
     owner: "RH", ownerKey: "rh", status: "pending", progress: 0,
     ganttStart: 44, ganttEnd: 100,
-    phases: [
-      { label: "F1", title: "Diagnóstico y requisitos", desc: "Perfiles de nuevos ingresos, contenidos obligatorios y estructura del programa.", date: "15–21 May", status: "pending" },
-      { label: "F2", title: "Planificación", desc: "Agenda de inducción, materiales y responsables por módulo.", date: "22–31 May", status: "pending" },
-      { label: "F3", title: "Ejecución", desc: "Sesiones de inducción, visitas guiadas y presentaciones.", date: "01–08 Jun", status: "pending" },
-      { label: "F4", title: "Validación y entrega", desc: "Evaluación de comprensión, retroalimentación y cierre.", date: "09–15 Jun", status: "pending" },
-    ],
+    phases: makeDefaultSubfases(),
   },
   {
     id: 5, name: "RAP Genética",
     inicio: "01/05", fin: "15/09", dias: 137,
     owner: "Ángel / Genética", ownerKey: "angel", status: "active", progress: 25,
     ganttStart: 30, ganttEnd: 167,
-    phases: [
-      { label: "F1", title: "Diagnóstico y requisitos", desc: "Mapeo de procesos genéticos, identificación de puntos críticos y requisitos del RAP.", date: "01–31 May", status: "active" },
-      { label: "F2", title: "Planificación y desarrollo", desc: "Diseño de protocolos, programación del sistema y pruebas internas.", date: "01 Jun – 15 Jul", status: "pending" },
-      { label: "F3", title: "Pruebas e integración", desc: "Validación con datos reales, integración con sistemas existentes.", date: "16 Jul – 15 Ago", status: "pending" },
-      { label: "F4", title: "Implementación y entrega", desc: "Capacitación de usuarios, ajustes finales y go-live. 350 horas estimadas.", date: "16 Ago – 15 Sep", status: "pending" },
-    ],
+    phases: makeDefaultSubfases(),
   },
   {
     id: 6, name: "CyA Genética",
     inicio: "15/06", fin: "15/08", dias: 61,
     owner: "Genética", ownerKey: "gen", status: "pending", progress: 0,
     ganttStart: 75, ganttEnd: 140,
-    phases: [
-      { label: "F1", title: "Diagnóstico y requisitos", desc: "Análisis de control y aseguramiento, identificación de procesos a sistematizar.", date: "15–30 Jun", status: "pending" },
-      { label: "F2", title: "Planificación", desc: "Diseño de flujos, asignación de recursos y cronograma detallado.", date: "01–31 Jul", status: "pending" },
-      { label: "F3", title: "Implementación", desc: "Desarrollo, configuración e integración del módulo CyA.", date: "01–15 Ago", status: "pending" },
-      { label: "F4", title: "Validación y entrega", desc: "Pruebas finales, documentación y entrega formal.", date: "16 Ago – 15 Sep", status: "pending" },
-    ],
+    phases: makeDefaultSubfases(),
   },
   {
     id: 7, name: "Cal. Genética",
     inicio: "01/07", fin: "15/09", dias: 76,
     owner: "Genética", ownerKey: "gen", status: "pending", progress: 0,
     ganttStart: 91, ganttEnd: 152,
-    phases: [
-      { label: "F1", title: "Diagnóstico y requisitos", desc: "Inventario de variables a calibrar, normativas aplicables y plan de muestreo.", date: "01–21 Jul", status: "pending" },
-      { label: "F2", title: "Planificación", desc: "Programa de calibración, selección de patrones y asignación de personal.", date: "22 Jul – 12 Ago", status: "pending" },
-      { label: "F3", title: "Ejecución", desc: "Calibraciones en campo, registro y corrección de desviaciones.", date: "13 Ago – 01 Sep", status: "pending" },
-      { label: "F4", title: "Validación y entrega", desc: "Certificación, informe ejecutivo y lecciones aprendidas.", date: "02–15 Sep", status: "pending" },
-    ],
+    phases: makeDefaultSubfases(),
   },
 ];
+
+/* ─── Supabase helpers ─── */
+
+function rowToActivity(row) {
+  return {
+    id:         row.id,
+    name:       row.name,
+    owner:      row.owner,
+    ownerKey:   row.owner_key,
+    inicio:     row.inicio,
+    fin:        row.fin,
+    dias:       row.dias,
+    status:     row.status,
+    progress:   row.progress,
+    ganttStart: row.gantt_start,
+    ganttEnd:   row.gantt_end,
+    phases:     row.phases,
+  };
+}
+
+function activityToRow(act) {
+  return {
+    name:        act.name,
+    owner:       act.owner,
+    owner_key:   act.ownerKey,
+    inicio:      act.inicio,
+    fin:         act.fin,
+    dias:        act.dias,
+    status:      act.status,
+    progress:    act.progress,
+    gantt_start: act.ganttStart,
+    gantt_end:   act.ganttEnd,
+    phases:      act.phases,
+  };
+}
+
+async function fetchActivities() {
+  const { data, error } = await supabase
+    .from("pm_activities")
+    .select("*")
+    .order("id");
+  if (error) throw error;
+  return data.map(rowToActivity);
+}
+
+async function upsertActivity(act) {
+  const row = activityToRow(act);
+  if (act.id && typeof act.id === "number") {
+    const { error } = await supabase
+      .from("pm_activities")
+      .update({ ...row, updated_at: new Date().toISOString() })
+      .eq("id", act.id);
+    if (error) throw error;
+  } else {
+    const { data, error } = await supabase
+      .from("pm_activities")
+      .insert(row)
+      .select("id")
+      .single();
+    if (error) throw error;
+    return data.id;
+  }
+}
+
+async function deleteActivityDB(id) {
+  const { error } = await supabase.from("pm_activities").delete().eq("id", id);
+  if (error) throw error;
+}
+
+async function seedDefaults() {
+  const rows = DEFAULT_ACTIVITIES.map(a => activityToRow(a));
+  const { error } = await supabase.from("pm_activities").insert(rows);
+  if (error) throw error;
+  return fetchActivities();
+}
+
+/* ─── small helpers ─── */
 
 function ownerInitials(o) {
   return o.split(/[\s/]+/).map(w => w[0]).join("").substring(0, 2).toUpperCase();
@@ -128,6 +243,21 @@ function IspLogo() {
       style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
   );
 }
+
+/* ─── Helper: compute phase-level progress from subfases ─── */
+function getPhaseProgress(phases) {
+  const result = {};
+  PHASE_META.forEach(pm => {
+    const key = pm.label;
+    const subs = (phases || []).filter(s => s.phase === key);
+    if (subs.length === 0) { result[key] = { done: 0, total: 0, pct: 0 }; return; }
+    const done = subs.filter(s => s.status === "done").length;
+    result[key] = { done, total: subs.length, pct: Math.round((done / subs.length) * 100) };
+  });
+  return result;
+}
+
+/* ─── Editable ─── */
 
 function Editable({ value, onChange, className = "", multiline = false, style = {} }) {
   const [editing, setEditing] = useState(false);
@@ -159,19 +289,26 @@ function StatusCycle({ status, onChange }) {
   );
 }
 
-function ProgressEditor({ progress, status, onChange }) {
+/* ─── Progress bar showing 4 phases with subfase-based fill ─── */
+
+function ProgressEditor({ phases, progress, status, onChange }) {
+  const phProg = getPhaseProgress(phases);
   return (
     <div className="prog-wrap">
       <div className="prog-top">
         <div className="prog-phases">
-          {PHASE_META.map((m, i) => {
-            const threshold = 25 * (i + 1);
-            const done = progress >= threshold;
-            const cur  = status === "active" && progress >= 25 * i && progress < threshold;
-            const bgStyle = (done || cur)
-              ? { backgroundColor: m.color, color: "#fff", opacity: cur ? 0.75 : 1 }
+          {PHASE_META.map((m) => {
+            const pp = phProg[m.label];
+            const filled = pp.pct > 0;
+            const full   = pp.pct === 100;
+            const bgStyle = (filled || full)
+              ? { backgroundColor: m.color, color: "#fff", opacity: full ? 1 : 0.7 }
               : { backgroundColor: "#EBF0F5", color: "#7A95AE", border: "1px solid rgba(26,58,92,0.16)" };
-            return <div key={m.key} className="prog-seg" style={bgStyle}>{m.label}</div>;
+            return (
+              <div key={m.key} className="prog-seg" style={bgStyle} title={`${m.label}: ${pp.done}/${pp.total}`}>
+                {m.label}
+              </div>
+            );
           })}
         </div>
         <span className="prog-pct">{progress}%</span>
@@ -183,22 +320,40 @@ function ProgressEditor({ progress, status, onChange }) {
   );
 }
 
+/* ─── Phase Panel: grouped by F1–F4 with subfases inside ─── */
+
 function PhasePanel({ phases, onUpdate }) {
+  const grouped = {};
+  PHASE_META.forEach(pm => { grouped[pm.label] = []; });
+  (phases || []).forEach((sub, i) => {
+    if (grouped[sub.phase]) grouped[sub.phase].push({ ...sub, _idx: i });
+  });
+
   return (
-    <div className="panel-phases">
-      {phases.map((ph, i) => {
-        const meta = PHASE_META[i];
+    <div className="panel-phases-v2">
+      {PHASE_META.map(pm => {
+        const subs = grouped[pm.label];
+        const doneCount = subs.filter(s => s.status === "done").length;
         return (
-          <div key={ph.label} className={`ph-card ph-card--${ph.status}`} style={{ "--ph-color": meta.color, "--ph-light": meta.light }}>
-            <div className="ph-card__bar" />
-            <div className="ph-card__body">
-              <div className="ph-card__top">
-                <span className="ph-tag" style={{ background: meta.color, color: "#fff" }}>{ph.label}</span>
-                <StatusCycle status={ph.status} onChange={v => onUpdate(i, "status", v)} />
-              </div>
-              <Editable className="ph-card__title" value={ph.title} onChange={v => onUpdate(i, "title", v)} />
-              <Editable className="ph-card__desc" value={ph.desc} multiline onChange={v => onUpdate(i, "desc", v)} />
-              <Editable className="ph-card__date" value={ph.date} onChange={v => onUpdate(i, "date", v)} />
+          <div key={pm.key} className="phase-group" style={{ "--ph-color": pm.color, "--ph-light": pm.light }}>
+            <div className="phase-group__header">
+              <span className="phase-group__tag" style={{ background: pm.color }}>{pm.label}</span>
+              <span className="phase-group__name">{pm.name}</span>
+              <span className="phase-group__count">{doneCount}/{subs.length}</span>
+            </div>
+            <div className="phase-group__subs">
+              {subs.map(sub => (
+                <div key={sub._idx} className={`subfase-card subfase-card--${sub.status}`} style={{ "--ph-color": pm.color, "--ph-light": pm.light }}>
+                  <div className="subfase-card__bar" />
+                  <div className="subfase-card__body">
+                    <div className="subfase-card__top">
+                      <Editable className="subfase-card__title" value={sub.title} onChange={v => onUpdate(sub._idx, "title", v)} />
+                      <StatusCycle status={sub.status} onChange={v => onUpdate(sub._idx, "status", v)} />
+                    </div>
+                    <Editable className="subfase-card__desc" value={sub.desc} multiline onChange={v => onUpdate(sub._idx, "desc", v)} />
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         );
@@ -251,7 +406,7 @@ function ActivityRow({ act, isOpen, onToggle, onUpdate, editMode }) {
           <StatusCycle status={act.status} onChange={v => upAct("status", v)} />
         </div>
         <div className="cell cell--progress" onClick={e => editMode && e.stopPropagation()}>
-          <ProgressEditor progress={act.progress} status={act.status} onChange={v => upAct("progress", v)} />
+          <ProgressEditor phases={act.phases} progress={act.progress} status={act.status} onChange={v => upAct("progress", v)} />
         </div>
         <div className="cell cell--chevron">
           <span className={`chevron ${isOpen ? "chevron--open" : ""}`}>
@@ -426,39 +581,113 @@ function AddModal({ onAdd, onClose }) {
   );
 }
 
-export default function App() {
-  const [page, setPage] = useState("plan"); // ← NUEVO: "plan" | "horas"
-  const [activities, setActivities] = useState(() => loadData() ?? DEFAULT_ACTIVITIES);
-  const [openId,  setOpenId]  = useState(null);
-  const [editMode, setEditMode] = useState(false);
-  const [showModal, setShowModal] = useState(false);
-  const [saved, setSaved] = useState(false);
+/* ─── MAIN APP ─── */
 
-  useEffect(() => { saveData(activities); setSaved(true); const t = setTimeout(() => setSaved(false), 1800); return () => clearTimeout(t); }, [activities]);
+export default function App() {
+  const [page, setPage]           = useState("plan");
+  const [activities, setActivities] = useState([]);
+  const [loading, setLoading]     = useState(true);
+  const [openId,  setOpenId]      = useState(null);
+  const [editMode, setEditMode]   = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [saved, setSaved]         = useState(false);
+  const [error, setError]         = useState(null);
+
+  const saveTimerRef = useRef(null);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        let data = await fetchActivities();
+        if (data.length === 0) {
+          data = await seedDefaults();
+        }
+        setActivities(data);
+      } catch (err) {
+        console.error("Error loading activities:", err);
+        setError("Error al conectar con la base de datos. Usando datos locales.");
+        setActivities(DEFAULT_ACTIVITIES);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
+  const saveActivityToDB = useCallback((act) => {
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(async () => {
+      try {
+        await upsertActivity(act);
+        setSaved(true);
+        setTimeout(() => setSaved(false), 1800);
+      } catch (err) {
+        console.error("Error saving activity:", err);
+      }
+    }, 500);
+  }, []);
 
   const toggle = id => setOpenId(prev => prev === id ? null : id);
+
   const updateActivity = useCallback((id, field, val) => {
-    setActivities(prev => prev.map(a => a.id === id ? { ...a, [field]: val } : a));
-  }, []);
-  const resetData = () => {
-    if (window.confirm("¿Resetear todo al estado original?")) { localStorage.removeItem(STORAGE_KEY); setActivities(DEFAULT_ACTIVITIES); }
+    setActivities(prev => {
+      const updated = prev.map(a => a.id === id ? { ...a, [field]: val } : a);
+      const act = updated.find(a => a.id === id);
+      if (act) saveActivityToDB(act);
+      return updated;
+    });
+  }, [saveActivityToDB]);
+
+  const resetData = async () => {
+    if (!window.confirm("¿Resetear todo al estado original? Se borrarán todas las actividades de la base de datos.")) return;
+    try {
+      await supabase.from("pm_activities").delete().neq("id", 0);
+      const data = await seedDefaults();
+      setActivities(data);
+    } catch (err) {
+      console.error("Error resetting:", err);
+    }
   };
-  const addActivity = ({ name, owner, inicio, fin }) => {
-    const newId = Math.max(...activities.map(a => a.id)) + 1;
-    setActivities(prev => [...prev, {
-      id: newId, name, owner, ownerKey: "gen", inicio, fin, dias: 30,
+
+  const addActivity = async ({ name, owner, inicio, fin }) => {
+    const newAct = {
+      name, owner, ownerKey: "gen", inicio, fin, dias: 30,
       status: "pending", progress: 0, ganttStart: 0, ganttEnd: 30,
-      phases: PHASE_META.map(m => ({ label: m.label, title: m.name, desc: "Descripción de la fase.", date: "—", status: "pending" })),
-    }]);
+      phases: makeDefaultSubfases(),
+    };
+    try {
+      const newId = await upsertActivity(newAct);
+      setActivities(prev => [...prev, { ...newAct, id: newId }]);
+    } catch (err) {
+      console.error("Error adding activity:", err);
+    }
   };
-  const deleteActivity = id => { setActivities(prev => prev.filter(a => a.id !== id)); if (openId === id) setOpenId(null); };
+
+  const deleteActivity = async (id) => {
+    try {
+      await deleteActivityDB(id);
+      setActivities(prev => prev.filter(a => a.id !== id));
+      if (openId === id) setOpenId(null);
+    } catch (err) {
+      console.error("Error deleting activity:", err);
+    }
+  };
 
   const activeCount = activities.filter(a => a.status === "active").length;
-  const donePhases  = activities.flatMap(a => a.phases).filter(p => p.status === "done").length;
-  const totalPhases = activities.length * 4;
+  const doneSubfases = activities.flatMap(a => a.phases || []).filter(p => p.status === "done").length;
+  const totalSubfases = activities.length * TOTAL_SUBFASES;
 
-  // ── RENDER HORAS PAGE ──
   if (page === "horas") return <HorasPage onBack={() => setPage("plan")} />;
+
+  if (loading) {
+    return (
+      <div className="app" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh" }}>
+        <div style={{ textAlign: "center", color: "#7A95AE" }}>
+          <div style={{ fontSize: 24, marginBottom: 8 }}>Cargando plan maestro…</div>
+          <div style={{ fontSize: 14 }}>Conectando con Supabase</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="app">
@@ -474,8 +703,8 @@ export default function App() {
         </div>
         <div className="app-header__actions">
           <div className="action-btns">
-            {saved && <span className="saved-toast">✓ Guardado</span>}
-            {/* ── BOTÓN HORAS ── */}
+            {saved && <span className="saved-toast">✓ Guardado en la nube</span>}
+            {error && <span className="saved-toast" style={{ background: "#FEE2E2", color: "#DC2626" }}>{error}</span>}
             <button className="btn-horas" onClick={() => setPage("horas")}>
               ⏱ Registro de horas
             </button>
@@ -489,7 +718,7 @@ export default function App() {
         <div className="app-kpis">
           <div className="kpi"><span className="kpi__val">{activities.length}</span><span className="kpi__lbl">Actividades</span></div>
           <div className="kpi kpi--teal"><span className="kpi__val">{activeCount}</span><span className="kpi__lbl">En curso</span></div>
-          <div className="kpi kpi--navy"><span className="kpi__val">{donePhases}<span className="kpi__total">/{totalPhases}</span></span><span className="kpi__lbl">Fases listas</span></div>
+          <div className="kpi kpi--navy"><span className="kpi__val">{doneSubfases}<span className="kpi__total">/{totalSubfases}</span></span><span className="kpi__lbl">Subfases listas</span></div>
         </div>
       </header>
 

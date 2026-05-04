@@ -9,3 +9,5 @@ root.render(
     <App />
   </React.StrictMode>
 );
+// logo
+// plan maestro desarrollo de software

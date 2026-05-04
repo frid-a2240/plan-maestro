@@ -1,7 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import "./HorasPage.css";
-
-const STORAGE_KEY_HORAS = "isp_horas_v1";
+import { supabase } from "./supabaseClient";
 
 const PROJECTS = [
   { id: "cap",  name: "Capacitación y adiestramiento", color: "#1BA8A0" },
@@ -23,14 +22,6 @@ const PHASES = [
 const MONTHS_ES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 const DAY_NAMES  = ["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"];
 
-function loadHoras() {
-  try { const s = localStorage.getItem(STORAGE_KEY_HORAS); if (s) return JSON.parse(s); } catch {}
-  return [];
-}
-function saveHoras(data) {
-  try { localStorage.setItem(STORAGE_KEY_HORAS, JSON.stringify(data)); } catch {}
-}
-
 function fmtHrs(h) { return h % 1 === 0 ? String(h) : h.toFixed(1); }
 function fmtDate(d) {
   const [y, m, day] = d.split("-");
@@ -45,8 +36,48 @@ function getWeekKey(dateStr) {
   return d.toISOString().split("T")[0];
 }
 
+/* ── Supabase helpers ── */
+
+async function fetchHoras() {
+  const { data, error } = await supabase
+    .from("pm_horas")
+    .select("*")
+    .order("fecha", { ascending: false });
+  if (error) throw error;
+  return data.map(row => ({
+    id:     row.id,
+    date:   row.fecha,
+    hrs:    parseFloat(row.hrs),
+    projId: row.proj_id,
+    phase:  row.phase,
+    note:   row.note || "",
+  }));
+}
+
+async function insertHora(entry) {
+  const { data, error } = await supabase
+    .from("pm_horas")
+    .insert({
+      fecha:   entry.date,
+      hrs:     entry.hrs,
+      proj_id: entry.projId,
+      phase:   entry.phase,
+      note:    entry.note,
+    })
+    .select("id")
+    .single();
+  if (error) throw error;
+  return data.id;
+}
+
+async function deleteHoraDB(id) {
+  const { error } = await supabase.from("pm_horas").delete().eq("id", id);
+  if (error) throw error;
+}
+
 export default function HorasPage({ onBack }) {
-  const [entries, setEntries] = useState(() => loadHoras());
+  const [entries, setEntries]   = useState([]);
+  const [loading, setLoading]   = useState(true);
   const [curYear,  setCurYear]  = useState(new Date().getFullYear());
   const [curMonth, setCurMonth] = useState(new Date().getMonth());
   const [selDate,  setSelDate]  = useState(todayStr());
@@ -57,7 +88,19 @@ export default function HorasPage({ onBack }) {
   const [inpProj,  setInpProj]  = useState(PROJECTS[0].id);
   const [inpPhase, setInpPhase] = useState("F1");
 
-  useEffect(() => { saveHoras(entries); }, [entries]);
+  /* ── Load entries on mount ── */
+  useEffect(() => {
+    (async () => {
+      try {
+        const data = await fetchHoras();
+        setEntries(data);
+      } catch (err) {
+        console.error("Error loading horas:", err);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
 
   function changeMonth(d) {
     let m = curMonth + d, y = curYear;
@@ -66,17 +109,28 @@ export default function HorasPage({ onBack }) {
     setCurMonth(m); setCurYear(y);
   }
 
-  function addEntry() {
+  async function addEntry() {
     const h = parseFloat(inpHrs);
     if (!inpDate || !h || h <= 0) return;
-    setEntries(prev => [...prev, { date: inpDate, hrs: h, projId: inpProj, phase: inpPhase, note: inpNote.trim() }]);
-    setInpHrs(""); setInpNote("");
-    const [y, m] = inpDate.split("-").map(Number);
-    setCurYear(y); setCurMonth(m - 1);
+    const newEntry = { date: inpDate, hrs: h, projId: inpProj, phase: inpPhase, note: inpNote.trim() };
+    try {
+      const newId = await insertHora(newEntry);
+      setEntries(prev => [{ ...newEntry, id: newId }, ...prev]);
+      setInpHrs(""); setInpNote("");
+      const [y, m] = inpDate.split("-").map(Number);
+      setCurYear(y); setCurMonth(m - 1);
+    } catch (err) {
+      console.error("Error adding hora:", err);
+    }
   }
 
-  function deleteEntry(idx) {
-    setEntries(prev => prev.filter((_, i) => i !== idx));
+  async function deleteEntry(id) {
+    try {
+      await deleteHoraDB(id);
+      setEntries(prev => prev.filter(e => e.id !== id));
+    } catch (err) {
+      console.error("Error deleting hora:", err);
+    }
   }
 
   function selectDay(dateStr) {
@@ -130,13 +184,23 @@ export default function HorasPage({ onBack }) {
   const maxWeekHrs = Math.max(...weeks.map(w => w.hrs), 1);
 
   const sortedLog = [...entries]
-    .map((e, i) => ({ ...e, _idx: i }))
     .filter(e => { const [y, m] = e.date.split("-").map(Number); return y === curYear && m - 1 === curMonth; })
     .sort((a, b) => b.date.localeCompare(a.date));
 
   function projColor(id) { return PROJECTS.find(p => p.id === id)?.color || "#888"; }
   function projName(id)  { return PROJECTS.find(p => p.id === id)?.name  || id; }
   function phaseInfo(k)  { return PHASES.find(p => p.key === k) || PHASES[0]; }
+
+  if (loading) {
+    return (
+      <div className="hp-page" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh" }}>
+        <div style={{ textAlign: "center", color: "#7A95AE" }}>
+          <div style={{ fontSize: 24, marginBottom: 8 }}>Cargando registro de horas…</div>
+          <div style={{ fontSize: 14 }}>Conectando con Supabase</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="hp-page">
@@ -343,7 +407,7 @@ export default function HorasPage({ onBack }) {
           : sortedLog.map(e => {
               const ph = phaseInfo(e.phase);
               return (
-                <div key={e._idx} className="hp-log__row">
+                <div key={e.id} className="hp-log__row">
                   <div style={{ color: "#7A95AE" }}>{fmtDate(e.date)}</div>
                   <div style={{ fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: 2, backgroundColor: projColor(e.projId), marginRight: 6 }} />
@@ -354,7 +418,7 @@ export default function HorasPage({ onBack }) {
                     <span className="hp-ph-pill" style={{ backgroundColor: ph.bg, color: ph.tx }}>{ph.key}</span>
                   </div>
                   <div className="hp-hrs-val">{fmtHrs(e.hrs)} h</div>
-                  <button className="hp-del" onClick={() => deleteEntry(e._idx)}>×</button>
+                  <button className="hp-del" onClick={() => deleteEntry(e.id)}>×</button>
                 </div>
               );
             })
