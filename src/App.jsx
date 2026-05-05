@@ -6,12 +6,18 @@ import { supabase } from "./supabaseClient";
 /* ─── NEW PHASE STRUCTURE ─── */
 
 const PHASE_META = [
-  { key: "f1", label: "F1", name: "Análisis y Planificación",               color: "#1BA8A0", light: "#E0F5F4" },
-  { key: "f2", label: "F2", name: "Diseño, Desarrollo y Pruebas Técnicas",  color: "#1E5C8A", light: "#D6E8F5" },
-  { key: "f3", label: "F3", name: "Validación del Negocio y Calidad",       color: "#5B3FA8", light: "#EAE5F8" },
-  { key: "f4", label: "F4", name: "Cierre, Operación y Mejora Continua",    color: "#1A3A5C", light: "#D4E0EC" },
-];
+  { key: "f1", label: "F1", name: "Análisis y Planificación", color: "#1BA8A0", light: "#E0F5F4",
+    desc: "Levantamiento y Análisis de Requerimientos:\n\nIdentificación de necesidades del negocio, stakeholders y alcance.\n\n\nPlanificación del Proyecto:\n\nDefinición de cronograma, recursos, riesgos y roadmap." },
 
+  { key: "f2", label: "F2", name: "Diseño, Desarrollo y Pruebas Técnicas", color: "#1E5C8A", light: "#D6E8F5",
+    desc: "Diseño de Arquitectura y Especificación Técnica\n\nDefinición de arquitectura, base de datos, APIs e infraestructura.\n\n\nDesarrollo / Implementación (Coding)\n\nConstrucción del sistema conforme a estándares.\n\n\nPruebas Unitarias (White-Box Testing)\n\nValidación interna del código por módulos.\n\n\nPruebas de Integración\n\nValidación de interacción entre componentes del sistema.\n\n\nDespliegue a Producción (Go-Live / Release)\n\nLiberación inicial del sistema en entorno productivo." },
+
+  { key: "f3", label: "F3", name: "Validación del Negocio y Calidad", color: "#5B3FA8", light: "#EAE5F8",
+    desc: "Pruebas del Sistema (System Testing)\n\nEvaluación completa del sistema en ambiente controlado.\n\n\nPruebas de Aceptación del Usuario (UAT - Process Owner)\n\nValidación funcional por parte del usuario o responsable del proceso." },
+
+  { key: "f4", label: "F4", name: "Cierre, Operación y Mejora Continua", color: "#1A3A5C", light: "#D4E0EC",
+    desc: "Validación Post-Implementación\n\nVerificación del correcto funcionamiento en producción.\n\n\nMantenimiento, Ajustes y Mejora Continua\n\nCorrección de errores, optimización y evolución del sistema.\n\n\nLecciones Aprendidas\n\nDocumentación de hallazgos, buenas prácticas y áreas de mejora identificadas durante el proyecto, con el objetivo de optimizar futuros desarrollos." },
+];
 /* Subfases template — used for new activities and defaults */
 const SUBFASES_TEMPLATE = [
   // F1 — Análisis y Planificación
@@ -320,9 +326,30 @@ function ProgressEditor({ phases, progress, status, onChange }) {
   );
 }
 
+/* ─── Phase Info Card (popup) ─── */
+
+function PhaseInfoCard({ phase, onClose }) {
+  return (
+    <div className="phase-info-overlay" onClick={onClose}>
+      <div className="phase-info-card" onClick={e => e.stopPropagation()} style={{ "--ph-color": phase.color, "--ph-light": phase.light }}>
+        <div className="phase-info-card__header">
+          <span className="phase-info-card__tag" style={{ background: phase.color }}>{phase.label}</span>
+          <span className="phase-info-card__name">{phase.name}</span>
+          <button className="phase-info-card__close" onClick={onClose}>✕</button>
+        </div>
+        <div className="phase-info-card__body">
+          <p className="phase-info-card__desc" style={{ whiteSpace: "pre-line" }}>{phase.desc}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ─── Phase Panel: grouped by F1–F4 with subfases inside ─── */
 
 function PhasePanel({ phases, onUpdate }) {
+  const [infoPhase, setInfoPhase] = useState(null);
+
   const grouped = {};
   PHASE_META.forEach(pm => { grouped[pm.label] = []; });
   (phases || []).forEach((sub, i) => {
@@ -331,6 +358,7 @@ function PhasePanel({ phases, onUpdate }) {
 
   return (
     <div className="panel-phases-v2">
+      {infoPhase && <PhaseInfoCard phase={infoPhase} onClose={() => setInfoPhase(null)} />}
       {PHASE_META.map(pm => {
         const subs = grouped[pm.label];
         const doneCount = subs.filter(s => s.status === "done").length;
@@ -339,7 +367,14 @@ function PhasePanel({ phases, onUpdate }) {
             <div className="phase-group__header">
               <span className="phase-group__tag" style={{ background: pm.color }}>{pm.label}</span>
               <span className="phase-group__name">{pm.name}</span>
-              <span className="phase-group__count">{doneCount}/{subs.length}</span>
+              <button className="phase-group__info" onClick={() => setInfoPhase(pm)} title="Ver descripción de la fase">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <circle cx="8" cy="8" r="7" stroke={pm.color} strokeWidth="1.5"/>
+                  <path d="M8 7v4" stroke={pm.color} strokeWidth="1.5" strokeLinecap="round"/>
+                  <circle cx="8" cy="5" r="0.75" fill={pm.color}/>
+                </svg>
+              </button>
+             
             </div>
             <div className="phase-group__subs">
               {subs.map(sub => (

@@ -574,3 +574,288 @@ body { background: var(--bg); color: var(--text); font-family: -apple-system, Bl
     gap: 0.375rem;
   }
 }
+/* ════════════════════════════════════════════════
+   APPEND THIS TO THE END OF YOUR App.css
+   New phase/subfase styles (v2) + info card
+   ════════════════════════════════════════════════ */
+
+/* Phase group container */
+.panel-phases-v2 {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  flex: 1;
+  position: relative;
+}
+
+/* Each phase group (F1, F2, etc.) */
+.phase-group {
+  border-radius: 12px;
+  border: 1px solid rgba(26, 58, 92, 0.08);
+  background: rgba(255, 255, 255, 0.6);
+  overflow: hidden;
+}
+
+.phase-group__header {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.75rem 1rem;
+  background: var(--ph-light);
+  border-bottom: 1px solid rgba(26, 58, 92, 0.06);
+}
+
+.phase-group__tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  padding: 3px 10px;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+
+.phase-group__name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1A3A5C;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Info button (ⓘ) */
+.phase-group__info {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, transform 0.15s;
+  padding: 0;
+}
+
+.phase-group__info:hover {
+  background: rgba(255, 255, 255, 1);
+  transform: scale(1.1);
+}
+
+.phase-group__count {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ph-color);
+  background: rgba(255, 255, 255, 0.8);
+  padding: 2px 8px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+/* ─── Phase Info Card (overlay popup) ─── */
+
+.phase-info-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 25, 40, 0.35);
+  backdrop-filter: blur(4px);
+  animation: phInfoFadeIn 0.2s ease;
+}
+
+@keyframes phInfoFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.phase-info-card {
+  background: #fff;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 440px;
+  box-shadow: 0 20px 60px rgba(15, 25, 40, 0.25), 0 0 0 1px rgba(26, 58, 92, 0.06);
+  overflow: hidden;
+  animation: phInfoSlideIn 0.25s ease;
+}
+
+@keyframes phInfoSlideIn {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.phase-info-card__header {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 1rem 1.25rem;
+  background: var(--ph-light);
+  border-bottom: 1px solid rgba(26, 58, 92, 0.06);
+}
+
+.phase-info-card__tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  padding: 4px 12px;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+
+.phase-info-card__name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1A3A5C;
+  flex: 1;
+  min-width: 0;
+}
+
+.phase-info-card__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(26, 58, 92, 0.08);
+  color: #7A95AE;
+  font-size: 14px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+  padding: 0;
+  line-height: 1;
+}
+
+.phase-info-card__close:hover {
+  background: rgba(26, 58, 92, 0.16);
+  color: #1A3A5C;
+}
+
+.phase-info-card__body {
+  padding: 1.25rem;
+}
+
+.phase-info-card__desc {
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: #3D5A73;
+  margin: 0;
+}
+
+/* ─── Subfase cards inside each phase group ─── */
+
+.phase-group__subs {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.subfase-card {
+  display: flex;
+  border-bottom: 1px solid rgba(26, 58, 92, 0.06);
+  transition: background 0.15s;
+}
+
+.subfase-card:last-child {
+  border-bottom: none;
+}
+
+.subfase-card:hover {
+  background: rgba(26, 58, 92, 0.02);
+}
+
+.subfase-card__bar {
+  width: 4px;
+  flex-shrink: 0;
+  background: var(--ph-color);
+  opacity: 0.2;
+  transition: opacity 0.15s;
+}
+
+.subfase-card--done .subfase-card__bar {
+  opacity: 1;
+}
+
+.subfase-card--active .subfase-card__bar {
+  opacity: 0.7;
+  background: var(--ph-color);
+}
+
+.subfase-card__body {
+  flex: 1;
+  padding: 0.625rem 1rem;
+  min-width: 0;
+}
+
+.subfase-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.subfase-card__title {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #1A3A5C;
+  flex: 1;
+  min-width: 0;
+}
+
+.subfase-card--done .subfase-card__title {
+  text-decoration: line-through;
+  opacity: 0.65;
+}
+
+.subfase-card__desc {
+  font-size: 11.5px;
+  color: #7A95AE;
+  line-height: 1.4;
+}
+
+.subfase-card--done .subfase-card__desc {
+  opacity: 0.5;
+}
+
+/* Status badge inside subfase — smaller version */
+.subfase-card .sbadge {
+  font-size: 10px;
+  padding: 2px 8px;
+  flex-shrink: 0;
+}
+.phase-info-card__desc {
+  white-space: pre-line;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .phase-group__header {
+    flex-wrap: wrap;
+  }
+  .phase-group__name {
+    font-size: 12px;
+  }
+  .subfase-card__top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.375rem;
+  }
+  .phase-info-card {
+    width: 95%;
+    max-width: 360px;
+  }
+}
