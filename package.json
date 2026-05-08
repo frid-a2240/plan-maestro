@@ -2,6 +2,7 @@
   "name": "plan-maestro-software",
   "version": "0.1.0",
   "private": true,
+   "homepage": "/plan-maestro",
   "dependencies": {
     "@supabase/supabase-js": "^2.105.3",
     "react": "^18.2.0",

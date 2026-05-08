@@ -859,3 +859,21 @@ body { background: var(--bg); color: var(--text); font-family: -apple-system, Bl
     max-width: 360px;
   }
 }
+
+.btn-prioridad {
+  padding: 7px 16px;
+  border-radius: var(--radius);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1.5px solid #D92D20;
+  background: #FEE4E2;
+  color: #B42318;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.btn-prioridad:hover {
+  background: #D92D20;
+  color: #fff;
+}

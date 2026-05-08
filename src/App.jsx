@@ -1,5 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from "react";
+import Prioridad from "./Prioridad";
 import "./App.css";
+import ispImg from './isp.jpg';
 import HorasPage from "./HorasPage";
 import { supabase } from "./supabaseClient";
 
@@ -245,7 +247,7 @@ function ownerInitials(o) {
 
 function IspLogo() {
   return (
-    <img src="/isp.jpg" alt="ISP Logo"
+    <img src={ispImg} alt="ISP Logo"
       style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
   );
 }
@@ -712,6 +714,7 @@ export default function App() {
   const totalSubfases = activities.length * TOTAL_SUBFASES;
 
   if (page === "horas") return <HorasPage onBack={() => setPage("plan")} />;
+  if (page === "prioridad") return <Prioridad onBack={() => setPage("plan")} />;
 
   if (loading) {
     return (
@@ -742,6 +745,9 @@ export default function App() {
             {error && <span className="saved-toast" style={{ background: "#FEE2E2", color: "#DC2626" }}>{error}</span>}
             <button className="btn-horas" onClick={() => setPage("horas")}>
               ⏱ Registro de horas
+            </button>
+            <button className="btn-prioridad" onClick={() => setPage("prioridad")}>
+              Prioridad
             </button>
             <button className={`btn-edit ${editMode ? "btn-edit--on" : ""}`} onClick={() => setEditMode(v => !v)}>
               {editMode ? "✓ Listo" : "✎ Editar plan"}

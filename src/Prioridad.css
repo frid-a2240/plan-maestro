@@ -1,0 +1,163 @@
+.prioridad-page {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+}
+
+.prioridad-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.prioridad-header h1 {
+  font-size: 28px;
+  color: #B42318;
+  margin-bottom: 4px;
+}
+
+.prioridad-header p {
+  color: #7A95AE;
+}
+
+.btn-back {
+  border: none;
+  background: #1A3A5C;
+  color: white;
+  padding: 10px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-back:hover {
+  background: #10273F;
+}
+
+.prioridad-add {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 1.5rem;
+}
+
+.prioridad-add input {
+  flex: 1;
+  border: 1px solid rgba(26,58,92,0.15);
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 14px;
+  outline: none;
+}
+
+.prioridad-add input:focus {
+  border-color: #D92D20;
+  box-shadow: 0 0 0 4px rgba(217,45,32,0.12);
+}
+
+.prioridad-add button {
+  border: none;
+  background: #D92D20;
+  color: white;
+  padding: 0 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.prioridad-add button:hover {
+  background: #B42318;
+}
+
+.prioridad-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.prioridad-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: white;
+  border: 1px solid rgba(26,58,92,0.08);
+  border-left: 6px solid #D92D20;
+  border-radius: 14px;
+  padding: 16px;
+  transition: all 0.15s;
+}
+
+.prioridad-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+}
+
+.prioridad-check {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid #D92D20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  color: white;
+  background: #D92D20;
+  flex-shrink: 0;
+}
+
+.prioridad-text {
+  flex: 1;
+  font-size: 14px;
+  color: #1A3A5C;
+  font-weight: 500;
+}
+
+.prioridad-delete {
+  border: none;
+  background: #FEE4E2;
+  color: #D92D20;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.prioridad-delete:hover {
+  background: #D92D20;
+  color: white;
+}
+
+.prioridad-card.done {
+  opacity: 0.7;
+}
+
+.prioridad-card.done .prioridad-text {
+  text-decoration: line-through;
+}
+
+.prioridad-empty {
+  text-align: center;
+  padding: 40px;
+  color: #7A95AE;
+  background: white;
+  border-radius: 14px;
+  border: 1px dashed rgba(26,58,92,0.2);
+}
+
+@media (max-width: 640px) {
+
+  .prioridad-add {
+    flex-direction: column;
+  }
+
+  .prioridad-add button {
+    height: 48px;
+  }
+
+}
