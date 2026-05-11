@@ -714,7 +714,7 @@ export default function App() {
   const totalSubfases = activities.length * TOTAL_SUBFASES;
 
   if (page === "horas") return <HorasPage onBack={() => setPage("plan")} />;
-  if (page === "prioridad") return <Prioridad onBack={() => setPage("plan")} />;
+  if (page === "prioridad") return <Prioridad onBack={() => setPage("plan")} activities={activities} />;
 
   if (loading) {
     return (
