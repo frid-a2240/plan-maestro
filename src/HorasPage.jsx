@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import ispImg from './isp.jpg';
 import "./HorasPage.css";
 import { supabase } from "./supabaseClient";
 
@@ -208,7 +209,7 @@ export default function HorasPage({ onBack }) {
       {/* TOP BAR */}
       <div className="hp-topbar">
         <div className="hp-brand">
-          <img src="/isp.jpg" alt="ISP" style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover" }} />
+          <img src={ispImg} alt="ISP" style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover" }} />
           <div className="hp-titles">
             <div className="hp-title">Registro de horas</div>
             <div className="hp-sub">ISP · Infraestructura y Servicios Portuarios</div>
