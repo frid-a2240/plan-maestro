@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect } from "react";
 import ispImg from './isp.jpg';
 import "./HorasPage.css";
 import { supabase } from "./supabaseClient";
@@ -97,15 +97,8 @@ export default function HorasPage({ onBack, activities = [] }) {
   const [inpDate,  setInpDate]  = useState(todayStr());
   const [inpHrs,   setInpHrs]   = useState("");
   const [inpNote,  setInpNote]  = useState("");
-  const [inpProj,  setInpProj]  = useState("");   // se inicializa en el efecto de abajo
+  const [inpProj,  setInpProj]  = useState(activities.length > 0 ? String(activities[0].id) : "");
   const [inpPhase, setInpPhase] = useState("F1");
-
-  /* Inicializa inpProj en cuanto PROJECTS tenga datos */
-  useEffect(() => {
-    if (PROJECTS.length > 0 && !inpProj) {
-      setInpProj(PROJECTS[0].id);
-    }
-  }, [PROJECTS.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* Carga registros de horas desde Supabase */
   useEffect(() => {
