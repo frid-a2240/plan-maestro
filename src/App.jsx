@@ -20,84 +20,25 @@ const PHASE_META = [
   { key: "f4", label: "F4", name: "Cierre, Operación y Mejora Continua", color: "#1A3A5C", light: "#D4E0EC",
     desc: "Validación Post-Implementación\n\nVerificación del correcto funcionamiento en producción.\n\n\nMantenimiento, Ajustes y Mejora Continua\n\nCorrección de errores, optimización y evolución del sistema.\n\n\nLecciones Aprendidas\n\nDocumentación de hallazgos, buenas prácticas y áreas de mejora identificadas durante el proyecto, con el objetivo de optimizar futuros desarrollos." },
 ];
+
 /* Subfases template — used for new activities and defaults */
 const SUBFASES_TEMPLATE = [
   // F1 — Análisis y Planificación
-  {
-    phase: "F1",
-    title: "Levantamiento y Análisis de Requerimientos",
-    desc: "Identificación de necesidades del negocio, stakeholders y alcance.",
-    status: "pending",
-  },
-  {
-    phase: "F1",
-    title: "Planificación del Proyecto",
-    desc: "Definición de cronograma, recursos, riesgos y roadmap.",
-    status: "pending",
-  },
+  { phase: "F1", title: "Levantamiento y Análisis de Requerimientos", desc: "Identificación de necesidades del negocio, stakeholders y alcance.", status: "pending" },
+  { phase: "F1", title: "Planificación del Proyecto", desc: "Definición de cronograma, recursos, riesgos y roadmap.", status: "pending" },
   // F2 — Diseño, Desarrollo y Pruebas Técnicas
-  {
-    phase: "F2",
-    title: "Diseño de Arquitectura y Especificación Técnica",
-    desc: "Definición de arquitectura, base de datos, APIs e infraestructura.",
-    status: "pending",
-  },
-  {
-    phase: "F2",
-    title: "Desarrollo / Implementación (Coding)",
-    desc: "Construcción del sistema conforme a estándares.",
-    status: "pending",
-  },
-  {
-    phase: "F2",
-    title: "Pruebas Unitarias (White-Box Testing)",
-    desc: "Validación interna del código por módulos.",
-    status: "pending",
-  },
-  {
-    phase: "F2",
-    title: "Pruebas de Integración",
-    desc: "Validación de interacción entre componentes del sistema.",
-    status: "pending",
-  },
-  {
-    phase: "F2",
-    title: "Despliegue a Producción (Go-Live / Release)",
-    desc: "Liberación inicial del sistema en entorno productivo.",
-    status: "pending",
-  },
+  { phase: "F2", title: "Diseño de Arquitectura y Especificación Técnica", desc: "Definición de arquitectura, base de datos, APIs e infraestructura.", status: "pending" },
+  { phase: "F2", title: "Desarrollo / Implementación (Coding)", desc: "Construcción del sistema conforme a estándares.", status: "pending" },
+  { phase: "F2", title: "Pruebas Unitarias (White-Box Testing)", desc: "Validación interna del código por módulos.", status: "pending" },
+  { phase: "F2", title: "Pruebas de Integración", desc: "Validación de interacción entre componentes del sistema.", status: "pending" },
+  { phase: "F2", title: "Despliegue a Producción (Go-Live / Release)", desc: "Liberación inicial del sistema en entorno productivo.", status: "pending" },
   // F3 — Validación del Negocio y Calidad
-  {
-    phase: "F3",
-    title: "Pruebas del Sistema (System Testing)",
-    desc: "Evaluación completa del sistema en ambiente controlado.",
-    status: "pending",
-  },
-  {
-    phase: "F3",
-    title: "Pruebas de Aceptación del Usuario (UAT)",
-    desc: "Validación funcional por parte del usuario o responsable del proceso (Process Owner).",
-    status: "pending",
-  },
+  { phase: "F3", title: "Pruebas del Sistema (System Testing)", desc: "Evaluación completa del sistema en ambiente controlado.", status: "pending" },
+  { phase: "F3", title: "Pruebas de Aceptación del Usuario (UAT)", desc: "Validación funcional por parte del usuario o responsable del proceso (Process Owner).", status: "pending" },
   // F4 — Cierre, Operación y Mejora Continua
-  {
-    phase: "F4",
-    title: "Validación Post-Implementación",
-    desc: "Verificación del correcto funcionamiento en producción.",
-    status: "pending",
-  },
-  {
-    phase: "F4",
-    title: "Mantenimiento, Ajustes y Mejora Continua",
-    desc: "Corrección de errores, optimización y evolución del sistema.",
-    status: "pending",
-  },
-  {
-    phase: "F4",
-    title: "Lecciones Aprendidas",
-    desc: "Documentación de hallazgos, buenas prácticas y áreas de mejora identificadas durante el proyecto, con el objetivo de optimizar futuros desarrollos.",
-    status: "pending",
-  },
+  { phase: "F4", title: "Validación Post-Implementación", desc: "Verificación del correcto funcionamiento en producción.", status: "pending" },
+  { phase: "F4", title: "Mantenimiento, Ajustes y Mejora Continua", desc: "Corrección de errores, optimización y evolución del sistema.", status: "pending" },
+  { phase: "F4", title: "Lecciones Aprendidas", desc: "Documentación de hallazgos, buenas prácticas y áreas de mejora identificadas durante el proyecto, con el objetivo de optimizar futuros desarrollos.", status: "pending" },
 ];
 
 const TOTAL_SUBFASES = SUBFASES_TEMPLATE.length; // 12
@@ -376,7 +317,6 @@ function PhasePanel({ phases, onUpdate }) {
                   <circle cx="8" cy="5" r="0.75" fill={pm.color}/>
                 </svg>
               </button>
-             
             </div>
             <div className="phase-group__subs">
               {subs.map(sub => (
@@ -621,14 +561,14 @@ function AddModal({ onAdd, onClose }) {
 /* ─── MAIN APP ─── */
 
 export default function App() {
-  const [page, setPage]           = useState("plan");
+  const [page, setPage]             = useState("plan");
   const [activities, setActivities] = useState([]);
-  const [loading, setLoading]     = useState(true);
-  const [openId,  setOpenId]      = useState(null);
-  const [editMode, setEditMode]   = useState(false);
-  const [showModal, setShowModal] = useState(false);
-  const [saved, setSaved]         = useState(false);
-  const [error, setError]         = useState(null);
+  const [loading, setLoading]       = useState(true);
+  const [openId,  setOpenId]        = useState(null);
+  const [editMode, setEditMode]     = useState(false);
+  const [showModal, setShowModal]   = useState(false);
+  const [saved, setSaved]           = useState(false);
+  const [error, setError]           = useState(null);
 
   const saveTimerRef = useRef(null);
 
@@ -709,11 +649,12 @@ export default function App() {
     }
   };
 
-  const activeCount = activities.filter(a => a.status === "active").length;
-  const doneSubfases = activities.flatMap(a => a.phases || []).filter(p => p.status === "done").length;
+  const activeCount   = activities.filter(a => a.status === "active").length;
+  const doneSubfases  = activities.flatMap(a => a.phases || []).filter(p => p.status === "done").length;
   const totalSubfases = activities.length * TOTAL_SUBFASES;
 
-  if (page === "horas") return <HorasPage onBack={() => setPage("plan")} />;
+  // ── Pass activities down so HorasPage always has the current list ──
+  if (page === "horas")     return <HorasPage onBack={() => setPage("plan")} activities={activities} />;
   if (page === "prioridad") return <Prioridad onBack={() => setPage("plan")} activities={activities} />;
 
   if (loading) {

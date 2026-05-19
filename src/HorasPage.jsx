@@ -3,14 +3,11 @@ import ispImg from './isp.jpg';
 import "./HorasPage.css";
 import { supabase } from "./supabaseClient";
 
-const PROJECTS = [
-  { id: "cap",  name: "Capacitación y adiestramiento", color: "#1BA8A0" },
-  { id: "cal",  name: "Calibración",                   color: "#1E5C8A" },
-  { id: "kpi",  name: "KPI's",                         color: "#5B3FA8" },
-  { id: "ind",  name: "Inducción",                     color: "#1A3A5C" },
-  { id: "rap",  name: "RAP Genética",                  color: "#2E7D6A" },
-  { id: "cya",  name: "CyA Genética",                  color: "#7A5800" },
-  { id: "calg", name: "Cal. Genética",                 color: "#C0392B" },
+/* ─── Paleta de colores para asignar a proyectos dinámicamente ─── */
+const PROJECT_COLORS = [
+  "#1BA8A0", "#1E5C8A", "#5B3FA8", "#1A3A5C",
+  "#2E7D6A", "#7A5800", "#C0392B", "#6D4C41",
+  "#1565C0", "#2E7D32", "#AD1457", "#4527A0",
 ];
 
 const PHASES = [
@@ -76,7 +73,21 @@ async function deleteHoraDB(id) {
   if (error) throw error;
 }
 
-export default function HorasPage({ onBack }) {
+/* ─── MAIN PAGE ─── */
+
+export default function HorasPage({ onBack, activities = [] }) {
+
+  /* Deriva la lista de proyectos desde las actividades recibidas.
+     - id  → String(act.id)  para que coincida con lo guardado en Supabase
+     - color → asignado cíclicamente desde PROJECT_COLORS
+     Si no hay actividades aún se usa un array vacío y el select quedará vacío
+     hasta que carguen. */
+  const PROJECTS = activities.map((act, idx) => ({
+    id:    String(act.id),
+    name:  act.name,
+    color: PROJECT_COLORS[idx % PROJECT_COLORS.length],
+  }));
+
   const [entries, setEntries]   = useState([]);
   const [loading, setLoading]   = useState(true);
   const [curYear,  setCurYear]  = useState(new Date().getFullYear());
@@ -86,10 +97,17 @@ export default function HorasPage({ onBack }) {
   const [inpDate,  setInpDate]  = useState(todayStr());
   const [inpHrs,   setInpHrs]   = useState("");
   const [inpNote,  setInpNote]  = useState("");
-  const [inpProj,  setInpProj]  = useState(PROJECTS[0].id);
+  const [inpProj,  setInpProj]  = useState("");   // se inicializa en el efecto de abajo
   const [inpPhase, setInpPhase] = useState("F1");
 
-  /* ── Load entries on mount ── */
+  /* Inicializa inpProj en cuanto PROJECTS tenga datos */
+  useEffect(() => {
+    if (PROJECTS.length > 0 && !inpProj) {
+      setInpProj(PROJECTS[0].id);
+    }
+  }, [PROJECTS.length]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  /* Carga registros de horas desde Supabase */
   useEffect(() => {
     (async () => {
       try {
@@ -112,7 +130,7 @@ export default function HorasPage({ onBack }) {
 
   async function addEntry() {
     const h = parseFloat(inpHrs);
-    if (!inpDate || !h || h <= 0) return;
+    if (!inpDate || !h || h <= 0 || !inpProj) return;
     const newEntry = { date: inpDate, hrs: h, projId: inpProj, phase: inpPhase, note: inpNote.trim() };
     try {
       const newId = await insertHora(newEntry);
@@ -146,7 +164,7 @@ export default function HorasPage({ onBack }) {
     return y === curYear && m - 1 === curMonth;
   });
 
-  const totalHrs    = monthEntries.reduce((s, e) => s + e.hrs, 0);
+  const totalHrs     = monthEntries.reduce((s, e) => s + e.hrs, 0);
   const daysWithData = new Set(monthEntries.map(e => e.date)).size;
 
   const todayWeekKey = getWeekKey(todayStr());
@@ -188,8 +206,9 @@ export default function HorasPage({ onBack }) {
     .filter(e => { const [y, m] = e.date.split("-").map(Number); return y === curYear && m - 1 === curMonth; })
     .sort((a, b) => b.date.localeCompare(a.date));
 
+  /* Helpers de lookup — buscan dentro de PROJECTS derivado dinámicamente */
   function projColor(id) { return PROJECTS.find(p => p.id === id)?.color || "#888"; }
-  function projName(id)  { return PROJECTS.find(p => p.id === id)?.name  || id; }
+  function projName(id)  { return PROJECTS.find(p => p.id === id)?.name  || `Proyecto ${id}`; }
   function phaseInfo(k)  { return PHASES.find(p => p.key === k) || PHASES[0]; }
 
   if (loading) {
@@ -274,9 +293,9 @@ export default function HorasPage({ onBack }) {
                 const projs= byDateProj[ds] || [];
                 const cls  = [
                   "hp-day",
-                  hrs > 0      ? "hp-day--has"      : "",
-                  ds === today ? "hp-day--today"     : "",
-                  ds === selDate ? "hp-day--selected" : "",
+                  hrs > 0        ? "hp-day--has"      : "",
+                  ds === today   ? "hp-day--today"     : "",
+                  ds === selDate ? "hp-day--selected"  : "",
                 ].join(" ");
                 return (
                   <div key={ds} className={cls} onClick={() => selectDay(ds)}>
@@ -381,7 +400,10 @@ export default function HorasPage({ onBack }) {
           <div className="hp-field">
             <label>Proyecto</label>
             <select value={inpProj} onChange={e => setInpProj(e.target.value)}>
-              {PROJECTS.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+              {PROJECTS.length === 0
+                ? <option value="">Cargando proyectos…</option>
+                : PROJECTS.map(p => <option key={p.id} value={p.id}>{p.name}</option>)
+              }
             </select>
           </div>
           <div className="hp-field">
@@ -390,7 +412,9 @@ export default function HorasPage({ onBack }) {
               {PHASES.map(p => <option key={p.key} value={p.key}>{p.key} · {p.name}</option>)}
             </select>
           </div>
-          <button className="hp-add-btn" onClick={addEntry}>+ Agregar</button>
+          <button className="hp-add-btn" onClick={addEntry} disabled={PROJECTS.length === 0}>
+            + Agregar
+          </button>
         </div>
       </div>
 
