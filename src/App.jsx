@@ -43,6 +43,28 @@ const SUBFASES_TEMPLATE = [
 
 const TOTAL_SUBFASES = SUBFASES_TEMPLATE.length; // 12
 
+/* ─── Cálculo de días entre fechas (formato dd/mm) ─── */
+function parseDDMM(str) {
+  if (!str) return null;
+  const m = String(str).trim().match(/^(\d{1,2})\/(\d{1,2})$/);
+  if (!m) return null;
+  const day = parseInt(m[1], 10);
+  const month = parseInt(m[2], 10);
+  if (month < 1 || month > 12 || day < 1 || day > 31) return null;
+  return { day, month };
+}
+
+function calcDias(inicioStr, finStr) {
+  const ini = parseDDMM(inicioStr);
+  const fin = parseDDMM(finStr);
+  if (!ini || !fin) return null;
+  const YEAR = 2024; // año bisiesto de referencia (solo importan día/mes)
+  const startMs = Date.UTC(YEAR, ini.month - 1, ini.day);
+  let endMs = Date.UTC(YEAR, fin.month - 1, fin.day);
+  if (endMs < startMs) endMs = Date.UTC(YEAR + 1, fin.month - 1, fin.day);
+  return Math.round((endMs - startMs) / 86400000);
+}
+
 function makeDefaultSubfases() {
   return SUBFASES_TEMPLATE.map(s => ({ ...s }));
 }
@@ -373,9 +395,9 @@ function ActivityRow({ act, isOpen, onToggle, onUpdate, editMode }) {
             {editMode ? <Editable className="date-val" value={act.fin} onChange={v => upAct("fin", v)} /> : <span className="date-val">{act.fin}</span>}
           </div>
         </div>
-        <div className="cell cell--dias" onClick={e => editMode && e.stopPropagation()}>
+        <div className="cell cell--dias">
           <div className="dias-block">
-            {editMode ? <Editable className="dias-num" value={String(act.dias)} onChange={v => upAct("dias", parseInt(v)||0)} /> : <span className="dias-num">{act.dias}</span>}
+            <span className="dias-num">{act.dias}</span>
             <span className="dias-lbl">días</span>
           </div>
         </div>
@@ -607,7 +629,15 @@ export default function App() {
 
   const updateActivity = useCallback((id, field, val) => {
     setActivities(prev => {
-      const updated = prev.map(a => a.id === id ? { ...a, [field]: val } : a);
+      const updated = prev.map(a => {
+        if (a.id !== id) return a;
+        const next = { ...a, [field]: val };
+        if (field === "inicio" || field === "fin") {
+          const dias = calcDias(next.inicio, next.fin);
+          if (dias !== null) next.dias = dias;
+        }
+        return next;
+      });
       const act = updated.find(a => a.id === id);
       if (act) saveActivityToDB(act);
       return updated;
@@ -626,8 +656,9 @@ export default function App() {
   };
 
   const addActivity = async ({ name, owner, inicio, fin }) => {
+    const dias = calcDias(inicio, fin);
     const newAct = {
-      name, owner, ownerKey: "gen", inicio, fin, dias: 30,
+      name, owner, ownerKey: "gen", inicio, fin, dias: dias !== null ? dias : 30,
       status: "pending", progress: 0, ganttStart: 0, ganttEnd: 30,
       phases: makeDefaultSubfases(),
     };
