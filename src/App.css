@@ -877,3 +877,23 @@ body { background: var(--bg); color: var(--text); font-family: -apple-system, Bl
   background: #D92D20;
   color: #fff;
 }
+
+/* ── COMPLETED ACTIVITIES BANNER ── */
+.completed-banner {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  background: #D6E8F5; border: 1px solid #8BBAD8;
+  border-radius: var(--radius); padding: 10px 16px;
+  margin-bottom: 1rem;
+}
+.completed-banner__icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
+  background: var(--navy-mid); color: #fff; font-size: 11px; font-weight: 800;
+}
+.completed-banner__label { font-size: 12px; font-weight: 700; color: var(--navy-mid); white-space: nowrap; }
+.completed-banner__list { display: flex; flex-wrap: wrap; gap: 6px; }
+.completed-chip {
+  font-size: 11px; font-weight: 600; color: var(--navy-mid);
+  background: #fff; border: 1px solid #8BBAD8; border-radius: 20px;
+  padding: 3px 10px;
+}

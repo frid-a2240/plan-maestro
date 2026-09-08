@@ -41,8 +41,6 @@ const SUBFASES_TEMPLATE = [
   { phase: "F4", title: "Lecciones Aprendidas", desc: "Documentación de hallazgos, buenas prácticas y áreas de mejora identificadas durante el proyecto, con el objetivo de optimizar futuros desarrollos.", status: "pending" },
 ];
 
-const TOTAL_SUBFASES = SUBFASES_TEMPLATE.length; // 12
-
 /* ─── Cálculo de días entre fechas (formato dd/mm) ─── */
 function parseDDMM(str) {
   if (!str) return null;
@@ -63,6 +61,19 @@ function calcDias(inicioStr, finStr) {
   let endMs = Date.UTC(YEAR, fin.month - 1, fin.day);
   if (endMs < startMs) endMs = Date.UTC(YEAR + 1, fin.month - 1, fin.day);
   return Math.round((endMs - startMs) / 86400000);
+}
+
+/* Referencia del Gantt: 1 de Mayo = día 0 (ver MONTHS/TOTAL_DAYS) */
+const GANTT_REF = { day: 1, month: 5 };
+
+function dateToGanttOffset(str) {
+  const d = parseDDMM(str);
+  if (!d) return null;
+  const YEAR = 2024;
+  const refMs = Date.UTC(YEAR, GANTT_REF.month - 1, GANTT_REF.day);
+  let dMs = Date.UTC(YEAR, d.month - 1, d.day);
+  if (dMs < refMs) dMs = Date.UTC(YEAR + 1, d.month - 1, d.day);
+  return Math.round((dMs - refMs) / 86400000);
 }
 
 function makeDefaultSubfases() {
@@ -635,6 +646,11 @@ export default function App() {
         if (field === "inicio" || field === "fin") {
           const dias = calcDias(next.inicio, next.fin);
           if (dias !== null) next.dias = dias;
+          // Mantiene el Gantt compatible con las fechas capturadas
+          const gs = dateToGanttOffset(next.inicio);
+          const ge = dateToGanttOffset(next.fin);
+          if (gs !== null) next.ganttStart = gs;
+          if (ge !== null) next.ganttEnd = ge;
         }
         return next;
       });
@@ -657,9 +673,13 @@ export default function App() {
 
   const addActivity = async ({ name, owner, inicio, fin }) => {
     const dias = calcDias(inicio, fin);
+    const ganttStart = dateToGanttOffset(inicio);
+    const ganttEnd = dateToGanttOffset(fin);
     const newAct = {
       name, owner, ownerKey: "gen", inicio, fin, dias: dias !== null ? dias : 30,
-      status: "pending", progress: 0, ganttStart: 0, ganttEnd: 30,
+      status: "pending", progress: 0,
+      ganttStart: ganttStart !== null ? ganttStart : 0,
+      ganttEnd: ganttEnd !== null ? ganttEnd : 30,
       phases: makeDefaultSubfases(),
     };
     try {
@@ -680,9 +700,9 @@ export default function App() {
     }
   };
 
-  const activeCount   = activities.filter(a => a.status === "active").length;
-  const doneSubfases  = activities.flatMap(a => a.phases || []).filter(p => p.status === "done").length;
-  const totalSubfases = activities.length * TOTAL_SUBFASES;
+  const activeCount     = activities.filter(a => a.status === "active").length;
+  const completedActivities = activities.filter(a => a.status === "done");
+  const completedCount  = completedActivities.length;
 
   // ── Pass activities down so HorasPage always has the current list ──
   if (page === "horas")     return <HorasPage onBack={() => setPage("plan")} activities={activities} />;
@@ -731,7 +751,7 @@ export default function App() {
         <div className="app-kpis">
           <div className="kpi"><span className="kpi__val">{activities.length}</span><span className="kpi__lbl">Actividades</span></div>
           <div className="kpi kpi--teal"><span className="kpi__val">{activeCount}</span><span className="kpi__lbl">En curso</span></div>
-          <div className="kpi kpi--navy"><span className="kpi__val">{doneSubfases}<span className="kpi__total">/{totalSubfases}</span></span><span className="kpi__lbl">Subfases listas</span></div>
+          <div className="kpi kpi--navy"><span className="kpi__val">{completedCount}</span><span className="kpi__lbl">Completadas</span></div>
         </div>
       </header>
 
@@ -739,6 +759,20 @@ export default function App() {
         <div className="edit-banner">
           <span className="edit-banner__icon">✎</span>
           Modo edición activo — haz clic en cualquier texto para editarlo · usa los sliders para el progreso · el estatus cambia al hacer clic en el badge
+        </div>
+      )}
+
+      {completedCount > 0 && (
+        <div className="completed-banner">
+          <span className="completed-banner__icon">✓</span>
+          <span className="completed-banner__label">Actividades completadas ({completedCount}):</span>
+          <div className="completed-banner__list">
+            {completedActivities.map(a => (
+              <span key={a.id} className="completed-chip" title={`${a.inicio} → ${a.fin}`}>
+                {a.name}
+              </span>
+            ))}
+          </div>
         </div>
       )}
 
